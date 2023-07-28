@@ -1,0 +1,79 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+        <div class="alert alert-success" role="alert">
+        {{ message }}
+        </div>
+        {% elif message.tags == 'error' %}
+        <div class="alert alert-danger" role="alert">
+        {{ message }}
+        </div>
+        {%endif%}
+    {% endfor %}
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        {%if not determine %}
+            <form action="{% url 'watchlist' lists.id %}", method ="post">
+                {%csrf_token%}
+                <input type="submit" value="Add-to-Watchlist" class="btn btn-primary">
+            </form>
+        {%else%}
+            <form action="{% url 'remove_watchlist' lists.id %}", method ="post">
+                {%csrf_token%}
+                <input type="submit" value="Remove-from-Watchlist" class="btn btn-primary">
+            </form>
+        {%endif%}
+    {% endif %}
+
+    <h2>Listing: {{lists.title}}</h2>
+    <img height="500px" width="auto"  src="{{lists.img_url}}" alt="{{lists.title}} image">
+    <br>
+    <label style="font-size: large; font-weight: bold;"> Description :</label>
+    <p><i>{{lists.description}}</i></p>
+    <h4>Current-bid: ${{lists.price.bid_amt}}</h4>
+    {% if user.is_authenticated %}
+        {%if bt%}
+            <form action="{% url 'list' lists.id%}", method="post">
+                {%csrf_token%}
+                <label><strong>Click here to close the Auction :</strong></label>
+                <button type="submit"  class="btn btn-warning">Close - Auction</button>
+            </form>
+        {%else%}
+            <form action="{% url 'list' lists.id%}", method="post">
+                {%csrf_token%}
+                <label><strong>Place you bid here :</strong></label>
+                <input type="number" name="bidding-amount"  min="0" >
+                <button type="submit" class="btn btn-danger">Bid - Now</button>
+            </form>
+        {%endif%}
+    {%else%}
+    <label> Must sign-in to post comments </label>
+    {%endif%}
+    <hr>
+    <h4>Add a Comment :</h4>
+    {% if user.is_authenticated %}
+        <form action="{% url 'comments' lists.id%}", method="post">
+            {%csrf_token%}
+            <textarea rows="4" cols="50" name="comment"></textarea>
+            <br>
+            <button type="submit">comment</button>
+        </form>
+    {%else%}
+    <label> Must sign-in to post comments </label>
+    {%endif%}
+    <hr>
+        <h4>Comments:</h4>
+        {%for com in allcomment %}
+            <p><strong>{{com.comment_user}} :</strong> {{com.comment}}</p>
+        {%endfor%}
+    <hr>
+    <h3>Details:</h3>
+    <ul>
+        <li>listed by: <strong>{{lists.publisher}}</strong></li>
+        <li>Category: <strong>{{category}}</strong></li>
+    </ul>
+{% endblock %}

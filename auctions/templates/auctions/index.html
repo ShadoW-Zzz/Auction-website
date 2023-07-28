@@ -1,0 +1,62 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+        <div class="alert alert-success" role="alert">
+        {{ message }}
+        </div>
+        {% elif message.tags == 'error' %}
+        <div class="alert alert-danger" role="alert">
+        {{ message }}
+        </div>
+        {%endif%}
+    {% endfor %}
+    {% endif %}
+
+    <h2 class="text-dark">Active Listings</h2>
+    <hr>
+        
+    <form action="{% url 'categories' %}", method="post">
+        {% csrf_token %}
+        <label>Choose a Category:</label>
+        <select name="category" id="category">
+        {% for cat in categories %}
+            <option value="{{cat}}">{{cat}}</option>
+        {% endfor %}
+        </select>
+        <input class="btn btn-primary" type="submit" value="Search">
+    </form>
+
+    <hr>
+    {% if listing %}
+        {% for ele in listing %}
+            <div class="card m-4 p-5 shadow">
+                <div class="d-flex justify-content-start">
+                    <img style="width: 200px; height: auto;" src="{{ele.img_url}}" class="img-thumbnail" alt="{{ele}} image">
+                    <div class="d-flex flex-column ml-4">
+                        <div class="p-2">
+                            <h3 class="text-danger">{{ele.title}}</h3>
+                        </div>
+                        <div class="p-2">
+                            <h4 class="text-dark">Current-bid: ${{ele.price.bid_amt}}</h4>
+                        </div>
+                        <div class="p-2">
+                            <p>{{ele.description}}</p>
+                        </div>
+                        <div class="mt-auto p-2">
+                            {%csrf_token%}
+                            <form action="{% url 'list' ele.id %}" method="get">
+                                <button type="submit" class="btn btn-primary">More details</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {%endfor%}
+    {%else%}
+        <h3>Sorry no Auction-item available in current category !!!</h3>
+    {%endif%}
+{% endblock %}
