@@ -1,0 +1,43 @@
+name: CI/CD Pipeline for Django Auction Website
+
+on:
+  push:
+    branches:
+      - main  # This triggers the pipeline on every push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # GitHub-hosted runner
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: SSH into EC2 and deploy
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.5  # SSH action for deployment
+        with:
+          host: <your-ec2-public-ip>  # Replace with your EC2 public IP
+          username: ubuntu  # Default user for Ubuntu instances
+          key: ${{ secrets.EC2_SSH_KEY }}  # Using the secret you created
+          script: |
+            cd /home/ubuntu/Auction-website
+
+            # Pull latest changes from GitHub
+            git pull origin main
+
+            # Install/update Python dependencies
+            pip install -r requirements.txt
+
+            # Run Django migrations to apply database changes
+            python manage.py migrate
+
+            # Collect static files for production
+            python manage.py collectstatic --noinput
+
+            # Restart Gunicorn (application server)
+            sudo systemctl restart gunicorn
+
+            # Restart Nginx (web server)
+            sudo systemctl restart nginx
